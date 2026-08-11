@@ -13,13 +13,13 @@ jobs:
 
       - name: Unzip project
         run: |
-          mkdir project
+          mkdir -p project
           unzip -q *.zip -d project
-          cd project
-          PROJECT_DIR=$(dirname "$(find . -name settings.gradle.kts -print -quit)")
-            echo "android.useAndroidX=true" >> "$PROJECT_DIR/gradle.properties"      echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          PROJECT_DIR=$(find project -name settings.gradle -o -name settings.gradle.kts | head -n 1 | xargs dirname)
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          echo "android.useAndroidX=true" >> "$PROJECT_DIR/gradle.properties"
           echo "android.enableJetifier=true" >> "$PROJECT_DIR/gradle.properties"
-        uses: actions/setup-java@v4
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -29,25 +29,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK
-        run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-          yes | sdkmanager --licenses || true
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
-
       - name: Build APK
         run: |
-          cd "project/$PROJECT_DIR"
-          gradle :app:assembleDebug --no-daemon
+          cd "$PROJECT_DIR"
+          chmod +x ./gradlew
+          ./gradlew :app:assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: RequestHook-debug-apk
-          path: project/**/app/build/outputs/apk/debug/app-debug.apk
+          name: RequestHook-debug
+          path: "$PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk"
