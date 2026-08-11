@@ -17,7 +17,7 @@ jobs:
           unzip -q *.zip -d project
           cd project
           PROJECT_DIR=$(dirname "$(find . -name settings.gradle.kts -print -quit)")
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+            echo "android.useAndroidX=true" >> "$PROJECT_DIR/gradle.properties"      echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Set up Java
         uses: actions/setup-java@v4
